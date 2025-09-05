@@ -1,84 +1,50 @@
+import React, { useEffect } from "react";
+import Navbar from "./components/Navbar";
+import HealthCheck from "./components/HealthCheck";
+import LoopbackTest from "./components/LoopbackTest";
+import RegisterAccount from "./components/RegisterAccount";
+import Login from "./components/Login";
+import AuthCheck from "./components/AuthCheck";
 import axios from "axios";
-import React, { useState } from "react";
+
+
+export const api = axios.create({
+    baseURL: "https://unique-suited-albacore.ngrok-free.app",
+    withCredentials: true,
+    xsrfCookieName: "XSRF-TOKEN",    
+    xsrfHeaderName: "X-XSRF-TOKEN",  
+  });
 
 const App = () => {
-  const [isLoading, setIsLoading] = useState(null);
-  const [status, setStatus] = useState(null);
-  const [response, setResponse] = useState("");
-  const [hasError, setHasError] = useState(null);
 
-  const HealthCheck = async () => {
-    setIsLoading(true);
+  
 
-    setStatus(null);
-    setResponse("");
-    setHasError(null);
-
-    try {
+  useEffect(() => {
+    const getCsrfCookie = async () => {
       await axios.get(
         "https://unique-suited-albacore.ngrok-free.app/sanctum/csrf-cookie",
         { withCredentials: true }
       );
+    };
 
-      const response = await axios.post(
-        "https://unique-suited-albacore.ngrok-free.app/api/healthcheck",
-        {},
-        { withCredentials: true, withXSRFToken: true }
-      );
-
-      setResponse(response.data.message);
-      setStatus(response.status);
-    } catch (error) {
-      setHasError(true);
-
-      if (error?.response?.data?.message) {
-        setStatus(error.response.data.message);
-      } else if (error?.response) {
-        setStatus(
-          `Error ${error.response.status}: ${error.response.statusText}`
-        );
-      } else {
-        setStatus(error.message || "An unknown error occurred");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    getCsrfCookie();
+  }, []);
 
   return (
-    <div className="h-screen flex items-center justify-center">
-      <div className="flex flex-col gap-5">
-        <h1 className="font-black text-2xl pb-5">HealthCheck</h1>
-
-        <button
-          onClick={HealthCheck}
-          className="cursor-pointer bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-2 px-10 text-lg rounded-[10px]"
-        >
-          Ping
-        </button>
-
-        <div className="flex items-center gap-2">
-          {isLoading === null ? (
-            <span className="block rounded-full size-3 bg-neutral-500"></span>
-          ) : isLoading ? (
-            <span className="border-3 border-blue-500 size-6 block rounded-full border-t-white animate-spin"></span>
-          ) : !hasError ? (
-            <span className="block rounded-full size-3 bg-green-500"></span>
-          ) : (
-            <span className="block rounded-full size-3 bg-red-500"></span>
-          )}
-
-          <p>{status ? status : "--"}</p>
-        </div>
-
-        <div>
-          <p className="flex items-center gap-2">
-            <span className="font-semibold">Message:</span>
-            {response ? response : "--"}
-          </p>
+    <>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-1 flex flex-col items-center gap-10 py-5 px-10">
+          <div className="space-y-10">
+            <HealthCheck />
+            <LoopbackTest />
+            <RegisterAccount />
+            <Login />
+            <AuthCheck />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
